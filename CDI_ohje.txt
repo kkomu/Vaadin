@@ -1,0 +1,31 @@
+CDI = Context Dependency Injection
+- Käytetään esim. näkymän vaihtoon
+- Projektista pitää poistaa alkuperäinen servlet (löytyy MyUI.java tiedoston lopusta) ja lisätä luokalle
+annotaatio @CDIUI(""). Jokaiseen näkymään pitää lisätä annotaatio @CDIView("nakymanNimi")
+- Näkymän täytyy implementoida luokka View ja periä jokin layout esim. VerticalLayout : 
+	public class DataView extends VerticalLayout implements View
+- 
+
+Netbeans:
+- CDI ei defaultina mukana projektissa.
+- Lisätään valitsemalla:
+	Depencencies -> Add dependency
+	Group ID: com.vaadin
+	Artifact ID: vaadin-cdi
+	Version: 1.0-SNAPSHOT
+	-> Add
+- googleta maven vaadin cdi
+- Sivulta mvnrepository.com löytyy tarvittavat tiedot ylläolevaan
+- Lisää uusi dependency:
+	Group ID: javax
+	Artifact ID: javaee-api
+	Version: 7.0
+(- Lisää uusi dependency:
+	Group ID: javax
+	Artifact ID: javaee-web-api
+	Version: 7.0)
+- Depencencies-valikon alta pitäisi nyt löytyä vaadin-cdi-1.0-SNAPSHOT, javaee-api-7.0 ja javaee-web-api-7.0
+- Jos tulee ongelmaa 'New Session Beans For Entity Classes' hommassa niin lisää dependency:
+	Group ID:org.glassfish.extras
+	Artifact ID: glassfish-embedded-all
+	Version: 3.1.1
