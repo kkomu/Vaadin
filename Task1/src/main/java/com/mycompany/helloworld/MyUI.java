@@ -6,6 +6,7 @@ import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.Widgetset;
 import com.vaadin.data.Item;
+import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.ItemClickEvent.ItemClickListener;
@@ -30,11 +31,19 @@ public class MyUI extends UI implements Button.ClickListener {
 
     private HorizontalLayout mainLayout = new HorizontalLayout();
     private VerticalLayout lblVertical = new VerticalLayout();
-    private String[] labels = new String[] {"Firstname","Lastname","Address","Email","Phone"};
-    private TextField[] txtFields = new TextField[labels.length];
+    //private String[] labels = new String[] {"Firstname","Lastname","Address","Email","Phone"};
+    //private TextField[] txtFields = new TextField[labels.length];
 
+    private TextField fname = new TextField("Firstname");
+    private TextField lname = new TextField("Lastname");
+    private TextField address = new TextField("Address");
+    private TextField email = new TextField("Email");
+    private TextField phone = new TextField("Phone");
+        
     private Button addButton = new Button("Add Contact");
     private Table contactList = new Table();
+    
+    private BeanContainer<String, Person> bean = new BeanContainer(Person.class);
     
     @Override
     public void buttonClick(Button.ClickEvent event) {
@@ -44,12 +53,19 @@ public class MyUI extends UI implements Button.ClickListener {
     @Override
     protected void init(VaadinRequest vaadinRequest) {
         this.setContent(mainLayout);
-        
+        /*
         for(int i=0; i<labels.length; i++) {
             txtFields[i] = new TextField(labels[i]);
             lblVertical.addComponent(txtFields[i]);
         }
-       
+        */
+        
+        lblVertical.addComponent(fname);
+        lblVertical.addComponent(lname);
+        lblVertical.addComponent(address);
+        lblVertical.addComponent(email);
+        lblVertical.addComponent(phone);
+        
         lblVertical.addComponent(addButton);
         
         lblVertical.setMargin(true);
@@ -82,9 +98,15 @@ public class MyUI extends UI implements Button.ClickListener {
                 
                 if(err.isEmpty()) {
                     addItemToTable();
+                    /*
                     for(TextField t: txtFields) {
                         t.setValue("");
-                    }
+                    }*/
+                    fname.setValue("");
+                    lname.setValue("");
+                    address.setValue("");
+                    email.setValue("");
+                    phone.setValue("");
                 }
                 else {
                     Notification.show(err + "field(s) empty");
@@ -103,21 +125,36 @@ public class MyUI extends UI implements Button.ClickListener {
     }
     
     private void initTableData(){
-   
-        contactList.setContainerDataSource(createDummyDataSource());
-        contactList.setVisibleColumns(new String[]{"Firstname","Lastname","Address","Email","Phone"});
+        
+        // Must match one of the Person-class' members. Usually the first defined member.
+        bean.setBeanIdProperty("firstName");
+        //contactList.setContainerDataSource(createDummyDataSource());
+        contactList.setContainerDataSource(bean);
+        contactList.setVisibleColumns(new Object[] {"firstName","lastName","address","email","phone"});
+        contactList.setColumnHeaders(new String[] {"Firstname","Lastname","Address","Email","Phone"});
     }
     
     private void addItemToTable(){
-     
+        Person temp = new Person();
+        
+        temp.setFirstName(fname.getValue());
+        temp.setLastName(lname.getValue());
+        temp.setAddress(address.getValue());
+        temp.setEmail(email.getValue());
+        temp.setPhone(phone.getValue());
+        
+        bean.addBean(temp);
+        
+        /*
         Object objectId = contactList.addItem();
         Item row = contactList.getItem(objectId);
         
         for(int i=0; i<labels.length; i++) {
             row.getItemProperty(labels[i]).setValue(txtFields[i].getValue());
         }
+        */
     }
-    
+    /*
     private IndexedContainer createDummyDataSource() {
         
         IndexedContainer ic = new IndexedContainer();
@@ -126,6 +163,7 @@ public class MyUI extends UI implements Button.ClickListener {
         }
          return ic;
     }
+    */
     
     @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
     @VaadinServletConfiguration(ui = MyUI.class, productionMode = false)
