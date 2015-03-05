@@ -42,6 +42,8 @@ public class DataView extends VerticalLayout implements View {
         BeanItemContainer<Customer> bean = new BeanItemContainer(Customer.class);
         bean.addAll(customer.findAll());
         table.setContainerDataSource(bean);
+        table.setVisibleColumns(new Object[] {"addressline1","city","email"});
+        table.setColumnHeaders(new String[] {"Address","City","Email"});
         this.addComponent(table);
         
         navigator = this.getUI().getNavigator();
