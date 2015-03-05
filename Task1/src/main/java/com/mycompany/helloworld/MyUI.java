@@ -8,6 +8,8 @@ import com.vaadin.annotations.Widgetset;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.BeanContainer;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.data.util.sqlcontainer.SQLContainer;
+import com.vaadin.data.util.sqlcontainer.query.TableQuery;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.server.VaadinRequest;
@@ -20,7 +22,10 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -45,6 +50,10 @@ public class MyUI extends UI implements Button.ClickListener {
     
     private BeanContainer<String, Person> bean = new BeanContainer(Person.class);
     
+    private DatabaseConnection conn = new DatabaseConnection();
+    private TableQuery query;
+    private SQLContainer container;
+    
     @Override
     public void buttonClick(Button.ClickEvent event) {
         Notification.show("Button pressed");
@@ -52,6 +61,14 @@ public class MyUI extends UI implements Button.ClickListener {
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
+        conn.connectToDB();
+        query = new TableQuery("person",conn.getConnection());
+        try {
+            container = new SQLContainer(query);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        
         this.setContent(mainLayout);
         /*
         for(int i=0; i<labels.length; i++) {
@@ -126,33 +143,61 @@ public class MyUI extends UI implements Button.ClickListener {
     
     private void initTableData(){
         
+        contactList.setContainerDataSource(container);
+        
         // Must match one of the Person-class' members. Usually the first defined member.
         bean.setBeanIdProperty("firstName");
+        
+        // Dummy
         //contactList.setContainerDataSource(createDummyDataSource());
-        contactList.setContainerDataSource(bean);
+        
+        // Bean
+        //contactList.setContainerDataSource(bean);
+        
         contactList.setVisibleColumns(new Object[] {"firstName","lastName","address","email","phone"});
         contactList.setColumnHeaders(new String[] {"Firstname","Lastname","Address","Email","Phone"});
     }
     
     private void addItemToTable(){
-        Person temp = new Person();
         
-        temp.setFirstName(fname.getValue());
-        temp.setLastName(lname.getValue());
-        temp.setAddress(address.getValue());
-        temp.setEmail(email.getValue());
-        temp.setPhone(phone.getValue());
+        Object id = container.addItem();
+        container.getContainerProperty(id, "firstName").setValue(fname.getValue());
+        container.getContainerProperty(id, "lastName").setValue(lname.getValue());
+        container.getContainerProperty(id, "address").setValue(address.getValue());
+        container.getContainerProperty(id, "email").setValue(email.getValue());
+        container.getContainerProperty(id, "phone").setValue(phone.getValue());
         
-        bean.addBean(temp);
-        
-        /*
-        Object objectId = contactList.addItem();
-        Item row = contactList.getItem(objectId);
-        
-        for(int i=0; i<labels.length; i++) {
-            row.getItemProperty(labels[i]).setValue(txtFields[i].getValue());
+        // Save data to db
+        try {
+            container.commit();
+        } catch (UnsupportedOperationException ex) {
+            ex.printStackTrace();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
-        */
+        
+            // Bean
+            /*
+            Person temp = new Person();
+            
+            temp.setFirstName(fname.getValue());
+            temp.setLastName(lname.getValue());
+            temp.setAddress(address.getValue());
+            temp.setEmail(email.getValue());
+            temp.setPhone(phone.getValue());
+            
+            bean.addBean(temp);
+            */
+            
+            // Dummy
+            /*
+            Object objectId = contactList.addItem();
+            Item row = contactList.getItem(objectId);
+            
+            for(int i=0; i<labels.length; i++) {
+            row.getItemProperty(labels[i]).setValue(txtFields[i].getValue());
+            }
+            */
     }
     /*
     private IndexedContainer createDummyDataSource() {
